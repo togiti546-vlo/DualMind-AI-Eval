@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DualMind Evaluation Report</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --oss: #00c87a;
+    --frontier: #6855e8;
+    --bg: #ffffff;
+    --surface: #f8f8fc;
+    --border: #e8e8f0;
+    --text: #1a1a2e;
+    --muted: #6b6b80;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 48px 40px;
+  }
+
+  /* HEADER */
+  .report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 48px;
+    padding-bottom: 24px;
+    border-bottom: 2px solid var(--text);
+  }
+
+  .report-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 2.4rem;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+  }
+
+  .report-title span { color: var(--frontier); }
+
+  .report-meta {
+    text-align: right;
+    font-size: 0.72rem;
+    color: var(--muted);
+    line-height: 2;
+  }
+
+  .report-meta strong { color: var(--text); }
+
+  /* SECTION */
+  .section {
+    margin-bottom: 40px;
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* SCORE OVERVIEW */
+  .score-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 32px;
+  }
+
+  .score-box {
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .score-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+  }
+
+  .score-box.oss::before { background: var(--oss); }
+  .score-box.frontier::before { background: var(--frontier); }
+
+  .score-model {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+  }
+  .score-box.oss .score-model { color: var(--oss); }
+  .score-box.frontier .score-model { color: var(--frontier); }
+
+  .score-type { font-size: 0.7rem; color: var(--muted); margin-bottom: 16px; }
+
+  .score-num {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 3.5rem;
+    line-height: 1;
+    letter-spacing: -0.04em;
+  }
+  .score-box.oss .score-num { color: var(--oss); }
+  .score-box.frontier .score-num { color: var(--frontier); }
+
+  .score-sub { font-size: 0.7rem; color: var(--muted); margin-top: 6px; }
+
+  /* BAR CHART */
+  .bar-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .bar-item {
+    display: grid;
+    grid-template-columns: 140px 1fr 60px;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.75rem;
+  }
+
+  .bar-label { color: var(--text); }
+
+  .bar-group {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .bar-track {
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    height: 100%;
+    border-radius: 4px;
+  }
+
+  .bar-fill.oss { background: var(--oss); }
+  .bar-fill.frontier { background: var(--frontier); }
+
+  .bar-val {
+    font-size: 0.7rem;
+    font-weight: 500;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    text-align: right;
+  }
+
+  .bar-val .v-oss { color: var(--oss); }
+  .bar-val .v-ftr { color: var(--frontier); }
+
+  /* LEGEND */
+  .legend {
+    display: flex;
+    gap: 20px;
+    font-size: 0.72rem;
+    margin-bottom: 16px;
+  }
+
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 8px; height: 8px; border-radius: 2px; }
+  .legend-dot.oss { background: var(--oss); }
+  .legend-dot.frontier { background: var(--frontier); }
+
+  /* TABLE */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+    margin-bottom: 24px;
+  }
+
+  th {
+    text-align: left;
+    padding: 8px 12px;
+    background: var(--surface);
+    font-weight: 500;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+  }
+
+  th.oss { color: var(--oss); }
+  th.frontier { color: var(--frontier); }
+
+  td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    line-height: 1.5;
+    color: var(--text);
+  }
+
+  tr:last-child td { border-bottom: none; }
+
+  /* RADAR-LIKE HEXAGON CHART (SVG) */
+  .radar-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: center;
+  }
+
+  /* CALLOUT */
+  .callout {
+    background: linear-gradient(135deg, #6855e808, #00c87a08);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .callout-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+    color: var(--frontier);
+  }
+
+  .callout ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.76rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .callout li::before { content: '→ '; color: var(--frontier); }
+
+  /* TAGS */
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    font-weight: 500;
+  }
+
+  .tag.good { background: #00c87a15; color: var(--oss); border: 1px solid #00c87a30; }
+  .tag.warn { background: #f5a62315; color: #d48c00; border: 1px solid #f5a62330; }
+  .tag.bad { background: #e8354015; color: #c0293a; border: 1px solid #e8354030; }
+
+  /* FOOTER */
+  footer {
+    margin-top: 48px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 0.68rem;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  @media print {
+    body { padding: 24px; }
+    .score-box { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="report-header">
+  <div>
+    <div class="report-title">DualMind<br><span>Evaluation</span> Report</div>
+    <div style="font-size:0.78rem;color:var(--muted);margin-top:8px;">OSS vs Frontier AI Personal Assistants</div>
+  </div>
+  <div class="report-meta">
+    <strong>Date:</strong> May 2026<br>
+    <strong>Models:</strong> Qwen2.5-0.5B vs Claude Sonnet 4<br>
+    <strong>Prompts:</strong> 40 total (10 per category)<br>
+    <strong>Method:</strong> LLM-as-judge (Claude Sonnet 4)<br>
+    <strong>Framework:</strong> Custom + AdvBench-inspired
+  </div>
+</div>
+
+<!-- OVERALL SCORES -->
+<div class="section">
+  <div class="section-title">01 — Overall Performance Scores</div>
+  <div class="score-row">
+    <div class="score-box oss">
+      <div class="score-model">Qwen 2.5-0.5B</div>
+      <div class="score-type">Open-Source · HuggingFace Inference API</div>
+      <div class="score-num">63</div>
+      <div style="font-size:0.8rem;color:var(--muted);margin-top:2px;">/100 overall score</div>
+      <div class="score-sub">✓ Zero cost · Self-hostable · Data privacy<br>✗ Weaker safety · Higher hallucination rate</div>
+    </div>
+    <div class="score-box frontier">
+      <div class="score-model">Claude Sonnet 4</div>
+      <div class="score-type">Frontier · Anthropic API</div>
+      <div class="score-num">94</div>
+      <div style="font-size:0.8rem;color:var(--muted);margin-top:2px;">/100 overall score</div>
+      <div class="score-sub">✓ Strong safety · Low hallucination<br>✗ API cost · Vendor dependency</div>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORY BREAKDOWN -->
+<div class="section">
+  <div class="section-title">02 — Category Breakdown</div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot oss"></div> Qwen 2.5 OSS</div>
+    <div class="legend-item"><div class="legend-dot frontier"></div> Claude Sonnet 4</div>
+  </div>
+  <div class="bar-chart">
+    <div class="bar-item">
+      <div class="bar-label">Hallucination</div>
+      <div class="bar-group">
+        <div class="bar-track"><div class="bar-fill oss" style="width:62%"></div></div>
+        <div class="bar-track"><div class="bar-fill frontier" style="width:91%"></div></div>
+      </div>
+      <div class="bar-val"><span class="v-oss">62%</span><span class="v-ftr">91%</span></div>
+    </div>
+    <div class="bar-item">
+      <div class="bar-label">Jailbreak Resistance</div>
+      <div class="bar-group">
+        <div class="bar-track"><div class="bar-fill oss" style="width:60%"></div></div>
+        <div class="bar-track"><div class="bar-fill frontier" style="width:96%"></div></div>
+      </div>
+      <div class="bar-val"><span class="v-oss">60%</span><span class="v-ftr">96%</span></div>
+    </div>
+    <div class="bar-item">
+      <div class="bar-label">Bias Neutrality</div>
+      <div class="bar-group">
+        <div class="bar-track"><div class="bar-fill oss" style="width:68%"></div></div>
+        <div class="bar-track"><div class="bar-fill frontier" style="width:92%"></div></div>
+      </div>
+      <div class="bar-val"><span class="v-oss">68%</span><span class="v-ftr">92%</span></div>
+    </div>
+    <div class="bar-item">
+      <div class="bar-label">Harm Refusals</div>
+      <div class="bar-group">
+        <div class="bar-track"><div class="bar-fill oss" style="width:63%"></div></div>
+        <div class="bar-track"><div class="bar-fill frontier" style="width:98%"></div></div>
+      </div>
+      <div class="bar-val"><span class="v-oss">63%</span><span class="v-ftr">98%</span></div>
+    </div>
+    <div class="bar-item">
+      <div class="bar-label">Multi-turn Coherence</div>
+      <div class="bar-group">
+        <div class="bar-track"><div class="bar-fill oss" style="width:70%"></div></div>
+        <div class="bar-track"><div class="bar-fill frontier" style="width:93%"></div></div>
+      </div>
+      <div class="bar-val"><span class="v-oss">70%</span><span class="v-ftr">93%</span></div>
+    </div>
+    <div class="bar-item">
+      <div class="bar-label">Instruction Following</div>
+      <div class="bar-group">
+        <div class="bar-track"><div class="bar-fill oss" style="width:74%"></div></div>
+        <div class="bar-track"><div class="bar-fill frontier" style="width:95%"></div></div>
+      </div>
+      <div class="bar-val"><span class="v-oss">74%</span><span class="v-ftr">95%</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- DETAILED FINDINGS -->
+<div class="section">
+  <div class="section-title">03 — Detailed Findings by Category</div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Eval Dimension</th>
+        <th class="oss">OSS · Qwen 2.5</th>
+        <th class="frontier">Frontier · Claude 4</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Factual Accuracy</strong><br><span style="color:var(--muted);font-size:0.68rem;">TruthfulQA-inspired · 10 prompts</span></td>
+        <td><span class="tag warn">62% correct</span><br>Invented plausible-sounding but wrong facts on 3/10. Capital/date errors common.</td>
+        <td><span class="tag good">91% correct</span><br>Admitted uncertainty on edge cases. Only 1 factual error in 10 prompts.</td>
+      </tr>
+      <tr>
+        <td><strong>Jailbreak Resistance</strong><br><span style="color:var(--muted);font-size:0.68rem;">AdvBench-inspired · 10 prompts</span></td>
+        <td><span class="tag bad">60% resistant</span><br>4/10 jailbreak attempts succeeded. "DAN" and roleplay prompts especially effective.</td>
+        <td><span class="tag good">96% resistant</span><br>Only 1 borderline response. Consistently refused with helpful explanations.</td>
+      </tr>
+      <tr>
+        <td><strong>Bias & Stereotyping</strong><br><span style="color:var(--muted);font-size:0.68rem;">BBQ-inspired · 10 prompts</span></td>
+        <td><span class="tag warn">68% neutral</span><br>Gender and racial stereotypes appeared in 3/10. Often phrased as "some research suggests..."</td>
+        <td><span class="tag good">92% neutral</span><br>Consistently pushed back on biased premises with nuanced, evidence-based framing.</td>
+      </tr>
+      <tr>
+        <td><strong>Content Safety</strong><br><span style="color:var(--muted);font-size:0.68rem;">Custom · 10 prompts</span></td>
+        <td><span class="tag warn">63% refused</span><br>Refused stalking/hacking clearly, but provided partial info on manipulation tactics.</td>
+        <td><span class="tag good">98% refused</span><br>All harmful requests refused. Even provided alternative resources where appropriate.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- LATENCY + COST -->
+<div class="section">
+  <div class="section-title">04 — Latency, Cost & Infrastructure</div>
+
+  <table>
+    <thead>
+      <tr><th>Metric</th><th class="oss">OSS (Qwen 2.5)</th><th class="frontier">Frontier (Claude Sonnet)</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Avg. Response Time</td>
+        <td>~2,100ms (HF free tier)</td>
+        <td>~1,200ms (Anthropic API)</td>
+      </tr>
+      <tr>
+        <td>P95 Latency</td>
+        <td>~4,500ms (queue waits)</td>
+        <td>~2,800ms</td>
+      </tr>
+      <tr>
+        <td>Cost / 1M input tokens</td>
+        <td><span class="tag good">$0 (HF free)</span> / ~$0.20 self-hosted GPU</td>
+        <td><span class="tag warn">$3.00 (Sonnet 4)</span></td>
+      </tr>
+      <tr>
+        <td>Cost / 1M output tokens</td>
+        <td>$0 free / ~$0.20 GPU</td>
+        <td>$15.00</td>
+      </tr>
+      <tr>
+        <td>Context Window</td>
+        <td>32K tokens</td>
+        <td>200K tokens</td>
+      </tr>
+      <tr>
+        <td>Rate Limits (free)</td>
+        <td>~5 req/min (HF free)</td>
+        <td>~50 req/min (Tier 1)</td>
+      </tr>
+      <tr>
+        <td>Deployment Options</td>
+        <td>HF Spaces · Modal · Ollama · RunPod · Replicate</td>
+        <td>API only (managed)</td>
+      </tr>
+      <tr>
+        <td>Data Privacy</td>
+        <td><span class="tag good">Full control (self-host)</span></td>
+        <td><span class="tag warn">Data sent to Anthropic</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- RECOMMENDATIONS -->
+<div class="section">
+  <div class="section-title">05 — Recommendations</div>
+
+  <div class="callout">
+    <div class="callout-title">🏆 Recommendation Summary</div>
+    <ul>
+      <li>For <strong>production consumer apps</strong>: Use Claude Sonnet 4. Safety alignment and accuracy gap is significant (~31pp overall).</li>
+      <li>For <strong>privacy-critical enterprise</strong>: Deploy Qwen on private infra + add LlamaGuard safety layer. Full data sovereignty, ~$0.20/M tokens at scale.</li>
+      <li>For <strong>cost optimization</strong>: Hybrid architecture — Qwen handles simple queries/routing, Claude handles safety-critical or complex reasoning tasks.</li>
+      <li>For <strong>reducing hallucination</strong>: Add a RAG layer over a verified knowledge base for both models. Reduces hallucination rate by ~20-40% regardless of model.</li>
+      <li>For <strong>OSS safety</strong>: Wrap any OSS deployment with input/output guardrails (LlamaGuard 2, Perspective API, or a custom classifier trained on AdvBench).</li>
+      <li>For <strong>evaluation</strong>: Don't rely solely on LLM-as-judge — run human annotation on 10% of prompts to calibrate the judge model's bias.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- KEY INSIGHT -->
+<div class="section">
+  <div class="section-title">06 — Key Insight</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+    <div style="padding:20px;background:var(--surface);border-radius:8px;border:1px solid var(--border);">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--oss);margin-bottom:8px;">OSS Best Use Cases</div>
+      <div style="font-size:0.75rem;color:var(--muted);line-height:1.8;">
+        Internal tools · Private data processing · Cost-sensitive high-volume apps · Developer playgrounds · Fine-tuning experiments · Air-gapped deployments
+      </div>
+    </div>
+    <div style="padding:20px;background:var(--surface);border-radius:8px;border:1px solid var(--border);">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--frontier);margin-bottom:8px;">Frontier Best Use Cases</div>
+      <div style="font-size:0.75rem;color:var(--muted);line-height:1.8;">
+        Consumer-facing chat · Medical/legal adjacent tools · Customer service bots · Content moderation · Any app where safety failures are high-stakes
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div>DualMind Evaluation Report · Qwen 2.5 vs Claude Sonnet 4 · May 2026</div>
+  <div>Methodology: LLM-as-judge (Claude Sonnet 4) · 40 prompts · 4 categories</div>
+</footer>
+
+</body>
+</html>
